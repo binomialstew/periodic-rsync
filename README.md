@@ -1,44 +1,60 @@
-# Periodic rsync container
+# Periodic rsync
 
-Due to a bug in Synology Active Backup, I created a container to sync a given
-directory periodically.
+Use docker instead of system crontab to sync directories
 
 # General
 
-For this container to work, we need to mount the local data source to /data
-and set either SOURCE or DESTINATION
+We mount the local data source to be synced to the docker `/data` mount point and set a `DESTINATION` in args:
+```
+services:
+  rsync:
+    restart: unless-stopped
+    build:
+      context: ./periodic-rsync
+      dockerfile: Dockerfile
+      args:
+        - DESTINATION=x.x.x.x
+    volumes:
+      - "./directory-to-sync:/data"
+    environment:
+      - USER=username
+      - TARGET=directory
+      - SCHEDULE=30 9 * * 1-5 # Every weekday (Monday to Friday) at 9:30 AM
+    # If your destination requires ssh authentication
+    # The service references the secret file defined in docker-compose `secrets`
+    secrets:
+      - user_ssh_key
+# Top-level secrets in your compose file
+secrets:
+  user_ssh_key:
+    file: ~/.ssh/id_rsa # Path to ssh key on your host system with rsync rights to the destination
+```
 
-```
-docker run -v /storage:/data -e PASSWORD=Insecure -e SOURCE=user@server.net:/source ressu/periodic-rsync
-```
+# Build args
+
+We require the following build args:
+  - DESTINATION: (required) Destination IP or domain
 
 # Environment
 
-This container takes the following environment variables.
+This container takes the following environment variables:
+  - USER: (required) The username that has the necessary ssh rights on the destination
+  - TARGET: The target directory on the destination host (default is /)
+  - SCHEDULE: A cron expression that defines how often rsync is run (default is every hour)
 
-## SCHEDULE
+# Secret
 
-This variable contains a standard cron schedule, for example `0 * * * *`
+If you require an ssh key for rsync, you can create a `secrets` entry both in the service and at the top level of docker-compose:
 
-## PASSWORD
+The `secrets` attribute in the service should match the name of the secret in the top-level `secrets` element:
 
-The SSH password used to login to the SSH server.
-
-## SOURCE
-
-Source address for rsync copy
-
-## SSH_OPTIONS
-
-Override default SSH options. By default set to `-Tx`, which disables terminal
-and X forwarding
-
-## DESTINATION
-
-Destination address to copy data to.
-
-# Directory for temporary files
-
-Sometimes it's needed to have temporary files outside of the transfer
-directory. Creating a directory named `.temp` in the filesystem mounted to
-`/data`, will use that directory to store temporary files during transfer.
+```
+services:
+  service:
+    ...
+    secrets:
+      - user_ssh_key
+secrets:
+  user_ssh_key:
+    file: ~/.ssh/id_rsa # Path to ssh key on your host system granting ssh rights to the destination
+```
