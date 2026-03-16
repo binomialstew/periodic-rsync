@@ -1,6 +1,6 @@
 FROM alpine
 MAINTAINER Charles Lehnert <Charles@CLLInteractive.com>
-ARG VERSION=2.0.0
+ARG VERSION=2.0.1
 LABEL version=$VERSION
 
 RUN apk add -U \

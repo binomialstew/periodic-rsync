@@ -45,10 +45,6 @@ set_arguments () {
   echo "Remote target="$REMOTE
 }
 
-do_rsync () {
-  rsync -Pav $LOCAL $REMOTE
-}
-
 set_arguments $1 $2
 show_header
 rsync -Pav $LOCAL $REMOTE
