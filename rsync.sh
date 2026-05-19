@@ -10,7 +10,7 @@ show_header () {
   echo "-----------------------------------------------------"
   echo "Periodic rsync v$VERSION"
   echo
-  echo "$(date +%H:%M:%S): Syncing files with rsync..."
+  echo "$(date '+%Y-%m-%d %H:%M:%S'): Syncing files with rsync..."
   echo
 }
 
@@ -47,5 +47,5 @@ set_arguments () {
 
 set_arguments $1 $2
 show_header
-rsync -Pav $LOCAL $REMOTE
+rsync -Pav $RSYNC_ARGS $LOCAL $REMOTE
 show_footer
