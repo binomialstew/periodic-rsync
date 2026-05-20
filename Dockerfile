@@ -7,6 +7,7 @@ RUN apk add -U \
   openssh-client \
   rsync \
   tini \
+  tzdata \
   && rm -rf /var/cache/apk/*
 
 ARG DESTINATION
